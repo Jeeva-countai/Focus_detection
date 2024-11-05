@@ -5,11 +5,13 @@ import time
 from BlurDetector import BlurDetector
 from fetch import FetchImage  # Import FetchImage for database operations
 from tqdm import tqdm
-
+from src.db import Database  # Import your Database class
 
 class BlurMain:
-    def __init__(self, db_path):
-        self.fetcher = FetchImage(db_path)  # Initialize FetchImage with the database path
+    def __init__(self):
+        # Initialize Database connection without a path
+        self.database = Database()  # Create a Database instance
+        self.fetcher = FetchImage(self.database.conn)  # Pass the database connection to FetchImage
 
     def run_blur_detection(self):
         """
@@ -18,7 +20,11 @@ class BlurMain:
         while True:
             # Fetch roll and camera details from the database
             roll_details = self.fetcher.fetch_roll_details()  # Gets roll_name, roll_number, revolution
-            cam_name = self.fetcher.fetch_cam_name()          # Gets cam_name
+            cam_name = self.fetcher.fetch_cam_name()
+            
+            print(roll_details)
+            print("------------------------------------------") 
+            print(cam_name)         # Gets cam_name
 
             if roll_details is None or cam_name is None:
                 print("No valid roll or camera details found. Retrying...")
@@ -72,7 +78,7 @@ class BlurMain:
             else:
                 result = f"The folder {folder_path} does not contain mostly blurry images, with a blurriness score of {avg_blurriness}."
 
-            log_file_path = "/path/to/your/log.txt"  # Update this to the desired log path
+            log_file_path = "/home/kniti/Documents/focus/Focus_detection/log/log.txt"  # Update this to the desired log path
             with open(log_file_path, "a") as log_file:
                 log_file.write(result + "\n")
 
@@ -82,6 +88,5 @@ class BlurMain:
 
 # Example usage
 if __name__ == "__main__":
-    db_path = "path_to_your_database.db"  # Replace with the actual database path
-    blur_main = BlurMain(db_path)
+    blur_main = BlurMain()
     blur_main.run_blur_detection()
